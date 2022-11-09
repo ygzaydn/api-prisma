@@ -14,7 +14,7 @@ export const protect = (req: IRequest, res: Response, next: NextFunction) => {
     return;
   }
 
-  const [, token] = bearer.split("");
+  const [, token] = bearer.split(" ");
   if (!token) {
     res.status(401);
     res.send("Not authorized");

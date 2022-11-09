@@ -4,6 +4,8 @@ import morgan from "morgan";
 import cors from "cors";
 import { protect } from "./middlewares/protect";
 
+import { createNewUser, signIn } from "./handlers/user";
+
 interface MyRequest extends Request {
   secretHeader?: String;
 }
@@ -21,6 +23,9 @@ app.use((req: MyRequest, res, next) => {
 });
 
 app.use("/api", protect, router);
+
+app.post("/user", createNewUser);
+app.post("/signin", signIn);
 
 app.get("/", (req, res) => {
   console.log("we got a get request on /");

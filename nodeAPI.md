@@ -708,6 +708,7 @@ import { Request, Response } from "express";
 export const createNewUser = async (req: Request, res: Response) => {
   const hash = await hashPassword(req.body.password);
 
+  // Prisma client is aware all of the models that we've created. So we can use .user method.
   const user = await prisma.user.create({
     data: {
       username: req.body.username,
@@ -719,3 +720,56 @@ export const createNewUser = async (req: Request, res: Response) => {
   res.json({ token });
 };
 ```
+
+Let's add one more function for sign in:
+
+```ts
+export const signIn = async (req: Request, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: req.body.username,
+    },
+  });
+
+  if (user) {
+    const isValid = await comparePasswords(req.body.password, user.password);
+
+    if (!isValid) {
+      res.status(401);
+      res.json({ message: "nope" });
+      return;
+    }
+
+    const token = createJWT(user);
+    res.json({ token });
+    return;
+  }
+  res.status(401);
+  res.json({ message: "nope" });
+  return;
+};
+```
+
+Now, we need to create some routes and add those handlers. On `src/server.ts`:
+
+```ts
+import { createNewUser, signin } from "./handlers/user";
+
+app.post("/user", createNewUser);
+app.post("/signin", signin);
+```
+
+Let's send a POST request to "/user" with body of
+
+```json
+{
+  "username": "scott",
+  "password": "password"
+}
+```
+
+As a result, we'll have a token response.
+
+> You can check your records by typing **npx prisma studio** over a new terminal. It'll open a webpage that shows you your DB records.
+
+And when you run `api/product` with given token, you'll get 200 OK message, means that we're good to go now.
