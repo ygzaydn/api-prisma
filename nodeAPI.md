@@ -1,5 +1,7 @@
 https://toolkit.addy.codes/
+
 https://hendrixer.github.io/API-design-v4/
+
 https://www.framer.com/templates/chronos/
 
 # API Design with Nodejs
@@ -14,7 +16,7 @@ Hosting -> Render
 
 ## Traditional Way
 
-`http` is built-in module on JS that help us to communicate with OS. All frameworks that helps us to crete new APIs uses http module (basically adds an abstraction to top of them)
+`http` is built-in module on JS that help us to communicate with OS. All frameworks that helps us to create new APIs uses http module (basically adds an abstraction to top of them)
 
 ```js
 const http = require("http");
@@ -511,6 +513,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 ```
 
+`urlencoded` parses the text of request and return the generated object of it. (ex. 'google.com?a=1&thing=otherthing')
+
 ---
 
 **Nodemon** is a package to provide you hot-reloading. To install it run `npm install nodemon --save-dev`. Once you install update the `dev` script in your `package.json` file:
@@ -520,3 +524,198 @@ app.use(express.urlencoded({ extended: true }));
 ```
 
 ---
+
+### Defining Custom Middlewares
+
+You can also define custom middlewares to enhance your API. Defining custom middlewares are straightforward.
+
+```ts
+app.use((req, res, next) => {
+  req.newHeader = "myMiddleware";
+  next();
+});
+```
+
+If you define the middleware above before your routers, you can reach the defined `newHeader` in your requests.
+
+```ts
+router.get('/product', (req, res) => {
+  res.json({req.newHeader}) //myMiddleware
+})
+```
+
+In case of TS, you also have to define new type for customized requests.
+
+```ts
+import express, { Request } from "express";
+import router from "./router";
+import morgan from "morgan";
+
+interface MyRequest extends Request {
+  secretHeader?: String;
+}
+
+const app = express();
+
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use((req: MyRequest, res, next) => {
+  req.secretHeader = "myMiddleware";
+  next();
+});
+
+app.use("/api", router, morgan("dev"));
+
+app.get("/", (req, res) => {
+  console.log("we got a get request on /");
+  res.status(200);
+  res.json({ message: "hello" });
+});
+
+export default app;
+```
+
+## Authentication
+
+Tokens are a great approach for this. Things like API Keys and JWT's are good examples of tokens.
+
+### JWT
+
+Users will need to send the JWT on every single request to get access to the API. Our API never stores a JWT, its stored client side.
+
+`npm i jsonwebtoken bcrypt dotenv`
+
+Create a new file `src/modules/auth` and add:
+
+```ts
+import jwt from "jsonwebtoken";
+
+export const createJWT = (user) => {
+  const token = jwt.sign(
+    { id: user.id, username: user.username },
+    process.env.JWT_SECRET
+  );
+  return token;
+};
+```
+
+This function will take a user and create a JWT from the user's id and username. This is helpful for later when we check for a JWT, we then will know what user is making the request.
+
+---
+
+To use environmental variables in your project, you have to import `dotenv` to your entry file. It's index.ts in our case. Add this to start of your file.
+
+```ts
+import * as dotenv from "dotenv";
+
+dotenv.config();
+```
+
+---
+
+As a next step, we have to create a custom middleware to check JWT. Create a new file `/src/middlewares/protect.ts` and add:
+
+```ts
+import { Request, Response, NextFunction } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface IRequest extends Request {
+  user?: JwtPayload | string;
+}
+
+export const protect = (req: IRequest, res: Response, next: NextFunction) => {
+  const bearer = req.header("authorization");
+
+  if (!bearer) {
+    res.status(401);
+    res.send("Not authorized");
+    return;
+  }
+
+  const [, token] = bearer.split("");
+  if (!token) {
+    console.log("here");
+    res.status(401);
+    res.send("Not authorized");
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!);
+    req.user = payload;
+    console.log(payload);
+    next();
+    return;
+  } catch (e) {
+    console.error(e);
+    res.status(401);
+    res.send("Not valid token");
+    return;
+  }
+};
+```
+
+> If we didn't wrap our payload check on `try-cache`, server would down in case of error. In this case, server will keep running.
+
+Lastly, we need to add our middleware onto our API router to protect it, so inside of `src/server.ts`, import protect and add it to the chain:
+
+`app.use("/api", protect, router)`
+
+Now any API call to anthing `/api` will need to have a JWT. Also, in order to have successful response, we have to **verify** our JWT, otherwise server will call _JsonWebTokenError: jwt malformed_ error.
+
+> Best place to keep JWT is cookie.
+
+### Hashing Passwords
+
+We know from our schema that a user needs a unique username and password. Instead of keeping passwords plain-text format, it's wiser choice to encrypt that.
+
+Inside of `src/modules/auth.ts`:
+
+```ts
+import * as bcrypt from "bcrypt";
+
+// Following functions returns a Promise
+export const comparePasswords = (password: string, hash: string) => {
+  return bcrypt.compare(password, hash);
+};
+
+export const hashPassword = (password: string) => {
+  return bcrypt.hash(password, 5);
+};
+```
+
+Now, its time to communicate with our DB. In order to do this operation, we need a client. To create a client, let's create a new file `src/db.ts`:
+
+```ts
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export default prisma;
+```
+
+Anytime we need a client, we can import now. Let's code a handler for new user now.
+
+Create `src/handlers/user.ts`:
+
+```ts
+import prisma from "../db";
+import { createJWT, hashPassword } from "../modules/auth";
+import { Request, Response } from "express";
+
+export const createNewUser = async (req: Request, res: Response) => {
+  const hash = await hashPassword(req.body.password);
+
+  const user = await prisma.user.create({
+    data: {
+      username: req.body.username,
+      password: hash,
+    },
+  });
+
+  const token = createJWT(user);
+  res.json({ token });
+};
+```
