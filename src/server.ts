@@ -11,9 +11,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", router, morgan("dev"));
 
 app.get("/", (req, res) => {
-    console.log("we got a get request on /");
-    res.status(200);
-    res.json({ message: "hello" });
+  console.log("we got a get request on /");
+  res.status(200);
+  res.json({ message: "hello" });
 });
 
 export default app;
