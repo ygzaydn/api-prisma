@@ -6,6 +6,27 @@ https://www.framer.com/templates/chronos/
 
 # API Design with Nodejs
 
+- [API Design with Nodejs](#api-design-with-nodejs)
+  - [Traditional Way](#traditional-way)
+  - [API Concepts](#api-concepts)
+    - [Server](#server)
+    - [Route](#route)
+    - [Route Handlers](#route-handlers)
+  - [Express](#express)
+  - [ORM](#orm)
+    - [Prisma](#prisma)
+      - [Creating Models](#creating-models)
+  - [Migrations](#migrations)
+  - [Route](#route-1)
+    - [Creating Routers](#creating-routers)
+  - [Middlewares](#middlewares)
+    - [Defining Custom Middlewares](#defining-custom-middlewares)
+  - [Authentication](#authentication)
+    - [JWT](#jwt)
+    - [Hashing Passwords](#hashing-passwords)
+
+
+
 Stack that we'll be using:
 
 ```
