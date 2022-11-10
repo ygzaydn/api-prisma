@@ -1,11 +1,14 @@
 import prisma from "../db";
 
 import { Request, Response } from "express";
-import { validationResult } from "express-validator";
 
-export const getProducts = async (req: Request, res: Response) => {
+import { IRequest } from "../types/types";
+
+export const getProducts = async (req: IRequest, res: Response) => {
     try {
-        const products = await prisma.product.findMany();
+        const products = await prisma.product.findMany({
+            where: {},
+        });
         res.status(200);
         return res.json({ products });
     } catch (e) {
