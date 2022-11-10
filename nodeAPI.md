@@ -24,6 +24,7 @@ https://www.framer.com/templates/chronos/
   - [Authentication](#authentication)
     - [JWT](#jwt)
     - [Hashing Passwords](#hashing-passwords)
+  - [Validators](#validators)
 
 
 
@@ -83,7 +84,7 @@ When building something trivial like our example, then not using a framework is 
 
 ### Server
 
-An API is a code that runs on server. A server is an app that has no visual representation and is always running. Usually connected to a network and shared among many clients (UIs, web apps, mobile apps etc.).. Servers usually sit in front of a DB and facilitate access to that DB. \
+An API is a code that runs on server. A server is an app that has no visual representation and is always running. Usually connected to a network and shared among many clients (UIs, web apps, mobile apps etc.).. Servers usually sit in front of a DB and facilitate access to that DB. 
 
 There are small exceptions here, and that would be serverless APIs. Big difference with serverless APIs is they are not always on like a traditional server. Servers must operate on a port, a virtual place on a computers OS where network connections start and end. Ports help comuters sort out their network traffic.
 
@@ -147,7 +148,9 @@ app.listen(3001, () => {
 
 ## ORM
 
-When it comes to choosing a DB for your API, there are many variables at play.\
+When it comes to choosing a DB for your API, there are many variables at play.
+
+
 However, no matter the DB, how you interact with the DB matters. What good is the perfect DB that is painfull to interact with. Enter, and ORM. Object-Relational Mapper (ORM) is a term used to describe a technique that allows you to interact with a DB using an object-oriented approach. When most people say ORM, they're actually talking about an ORM library, which is really just and SDK for your DB. For example, without and ORM, you can only interact with a SQL DB using SQL.
 
 ```SQL
@@ -182,7 +185,7 @@ db.customers.create({
 
 ### Prisma
 
-Prisma is a DB agnostic, type safe ORM. It supports most DBs out there. It not only has an SDK for doing basic and advanced querying of a DB, but also handles schemas, migrations, seeding, and sophisticated writes. It's slowly but surely becoming the ORM of choice for Node.js projects. \
+Prisma is a DB agnostic, type safe ORM. It supports most DBs out there. It not only has an SDK for doing basic and advanced querying of a DB, but also handles schemas, migrations, seeding, and sophisticated writes. It's slowly but surely becoming the ORM of choice for Node.js projects. 
 
 We'll be using PSQL as a DB in this course. You won't have to install anything as we'll be using a hosting and managed DB from Render. We need to create an account first.
 
@@ -398,7 +401,7 @@ model UpdatePoint {
 
 ## Migrations
 
-Since this is our first time interacting with the DB, we need to run our initial migration to get the DB and our schema in sync. \
+Since this is our first time interacting with the DB, we need to run our initial migration to get the DB and our schema in sync. 
 
 Before we run a migration, we need to install the prisma client which is the SDK we'll use in our code to interact with the DB. This client is type-safe and based on of our schema. It's actually an NPM package that gets generated on demand to adjust to your schema.
 
@@ -523,7 +526,7 @@ app.get("/", (req, res) => {
 export default app;
 ```
 
-The place we put morgan is important. Since it is a middleware, be sure that you add it before your routes.\
+The place we put morgan is important. Since it is a middleware, be sure that you add it before your routes.
 
 Additionally, you don't have to add morgan to your main app. You can add any middleware to any routes, instead of adding it globally.
 
@@ -794,3 +797,29 @@ As a result, we'll have a token response.
 > You can check your records by typing **npx prisma studio** over a new terminal. It'll open a webpage that shows you your DB records.
 
 And when you run `api/product` with given token, you'll get 200 OK message, means that we're good to go now.
+
+## Validators
+
+We should have some validators for incoming request before processing it. Users might have send unwanted form of requests. That is the place of input validators. They prevent crashing of our server.
+
+Express has a middleware that behaves as a validator.
+
+`npm i express-validator --save`
+
+You can use it as follows:
+
+```ts
+import { body, validationResult } from 'express-validator';
+
+app.post("/", body("name").exists(), (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    res.status(400);
+    res.json({errors: errors.array()})
+  }
+})
+
+```
+
+The validator above will check if incoming request has property named `name` inside its body.
