@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, oneOf } from "express-validator";
 import {
     getProducts,
     getProduct,
@@ -29,7 +29,14 @@ router.delete("/product/:id", (req, res) => {});
 router.get("/update", (req, res) => {});
 router.get("/update/:id", (req, res) => {});
 router.post("/update", (req, res) => {});
-router.put("/update/:id", (req, res) => {});
+router.put(
+    "/update/:id",
+    body("title").optional(),
+    body("body").optional(),
+    body("status").isIn(["IN_PROGRESS", "LIVE", "DEPRECATED", "ARCHIVED"]),
+    handleInputErrors,
+    (req, res) => {}
+);
 router.delete("/update/:id", (req, res) => {});
 
 /** UpdatePoint **/
