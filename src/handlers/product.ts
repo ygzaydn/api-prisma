@@ -1,6 +1,7 @@
 import prisma from "../db";
 
 import { Request, Response } from "express";
+import { validationResult } from "express-validator";
 
 export const getProducts = async (req: Request, res: Response) => {
     try {
@@ -47,6 +48,35 @@ export const postProduct = async (req: Request, res: Response) => {
         }
     } catch (e) {
         res.status(400);
+        res.json({ error: e });
+    }
+};
+
+export const updateProduct = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(404);
+        res.json({ error: errors.array() });
+        return;
+    }
+
+    try {
+        const id = req.params.id;
+        const product = await prisma.product.update({
+            where: {
+                id,
+            },
+            data: {
+                name: req.body.name,
+                belongsToId: req.body.userID,
+            },
+        });
+
+        res.status(201);
+        res.json({ product });
+    } catch (e) {
+        res.status(404);
         res.json({ error: e });
     }
 };
