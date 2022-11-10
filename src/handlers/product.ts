@@ -32,3 +32,21 @@ export const getProduct = async (req: Request, res: Response) => {
         res.json({ error: e });
     }
 };
+
+export const postProduct = async (req: Request, res: Response) => {
+    try {
+        const product = await prisma.product.create({
+            data: {
+                name: req.body.name,
+                belongsToId: req.body.userID,
+            },
+        });
+        if (product) {
+            res.status(200);
+            return res.json({ product });
+        }
+    } catch (e) {
+        res.status(400);
+        res.json({ error: e });
+    }
+};

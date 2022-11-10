@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
-import { getProducts, getProduct } from "./handlers/product";
+import { getProducts, getProduct, postProduct } from "./handlers/product";
 
 const router = Router();
 
@@ -9,7 +9,7 @@ router.get("/product", getProducts);
 
 // :id is parameter here
 router.get("/product/:id", getProduct);
-router.post("/product", (req, res) => {});
+router.post("/product", postProduct);
 router.put("/product/:id", body("name").exists(), (req, res) => {
     const error = validationResult(req);
     console.log(error.isEmpty());
