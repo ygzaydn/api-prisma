@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 import {
     getProducts,
     getProduct,
     postProduct,
     updateProduct,
 } from "./handlers/product";
+import { handleInputErrors } from "./middlewares/validation";
 
 const router = Router();
 
@@ -15,7 +16,12 @@ router.get("/product", getProducts);
 // :id is parameter here
 router.get("/product/:id", getProduct);
 router.post("/product", postProduct);
-router.put("/product/:id", body("name").exists(), updateProduct);
+router.put(
+    "/product/:id",
+    body("name").exists(),
+    handleInputErrors,
+    updateProduct
+);
 router.delete("/product/:id", (req, res) => {});
 
 /** Update **/

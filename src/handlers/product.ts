@@ -53,14 +53,6 @@ export const postProduct = async (req: Request, res: Response) => {
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        res.status(404);
-        res.json({ error: errors.array() });
-        return;
-    }
-
     try {
         const id = req.params.id;
         const product = await prisma.product.update({
