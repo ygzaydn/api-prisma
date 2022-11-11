@@ -1,7 +1,6 @@
 import prisma from "../db";
 
 import { Request, Response } from "express";
-
 import { IRequest, JwtPayload } from "../types/types";
 
 export const getProducts = async (req: IRequest, res: Response) => {
@@ -9,28 +8,35 @@ export const getProducts = async (req: IRequest, res: Response) => {
         const blabla = req.user as JwtPayload;
         const { id } = blabla;
 
-        const products = await prisma.product.findMany({
+        const user = await prisma.user.findUnique({
             where: { id },
+            include: { product: true },
         });
         res.status(200);
-        return res.json({ products });
+        return res.json({ data: user?.product });
     } catch (e) {
         res.status(400);
         res.json({ error: e });
     }
 };
 
-export const getProduct = async (req: Request, res: Response) => {
+export const getProduct = async (req: IRequest, res: Response) => {
     try {
-        const id = req.params.id;
-        const product = await prisma.product.findUnique({
+        const token = req.user as JwtPayload;
+        const { id } = token;
+
+        const productID = req.params.id;
+
+        const product = await prisma.product.findFirst({
             where: {
-                id,
+                id: productID,
+                belongsToId: id,
             },
         });
+
         if (product) {
             res.status(200);
-            return res.json({ product });
+            return res.json({ data: product });
         }
         res.status(404);
         return res.json({ error: `Product id:${id} not found` });

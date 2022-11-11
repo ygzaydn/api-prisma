@@ -15,17 +15,31 @@ const router = Router();
 router.get("/product", handleInputErrors, getProducts);
 
 // :id is parameter here
-router.get("/product/:id", body("id").exists(), handleInputErrors, getProduct);
-router.post("/product", body("name").exists(), handleInputErrors, postProduct);
+router.get(
+    "/product/:id",
+    body("id").exists(),
+    body("id").isString(),
+    handleInputErrors,
+    getProduct
+);
+router.post(
+    "/product",
+    body("name").exists(),
+    body("name").isString(),
+    handleInputErrors,
+    postProduct
+);
 router.put(
     "/product/:id",
     body("name").exists(),
+    body("name").isString(),
     handleInputErrors,
     updateProduct
 );
 router.delete(
     "/product/:id",
     body("name").exists(),
+    body("name").isString(),
     handleInputErrors,
     deleteProduct
 );
