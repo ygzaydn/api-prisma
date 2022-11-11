@@ -5,24 +5,30 @@ import {
     getProduct,
     postProduct,
     updateProduct,
+    deleteProduct,
 } from "./handlers/product";
 import { handleInputErrors } from "./middlewares/validation";
 
 const router = Router();
 
 /** Product **/
-router.get("/product", getProducts);
+router.get("/product", handleInputErrors, getProducts);
 
 // :id is parameter here
-router.get("/product/:id", getProduct);
-router.post("/product", postProduct);
+router.get("/product/:id", body("id").exists(), handleInputErrors, getProduct);
+router.post("/product", body("name").exists(), handleInputErrors, postProduct);
 router.put(
     "/product/:id",
     body("name").exists(),
     handleInputErrors,
     updateProduct
 );
-router.delete("/product/:id", (req, res) => {});
+router.delete(
+    "/product/:id",
+    body("name").exists(),
+    handleInputErrors,
+    deleteProduct
+);
 
 /** Update **/
 

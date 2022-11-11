@@ -40,12 +40,15 @@ export const getProduct = async (req: Request, res: Response) => {
     }
 };
 
-export const postProduct = async (req: Request, res: Response) => {
+export const postProduct = async (req: IRequest, res: Response) => {
     try {
+        const reqUser = req.user as JwtPayload;
+        const { id } = reqUser;
+
         const product = await prisma.product.create({
             data: {
                 name: req.body.name,
-                belongsToId: req.body.userID,
+                belongsToId: id,
             },
         });
         if (product) {
@@ -58,21 +61,38 @@ export const postProduct = async (req: Request, res: Response) => {
     }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: IRequest, res: Response) => {
     try {
-        const id = req.params.id;
+        const productID = req.params.id;
+        const reqUser = req.user as JwtPayload;
+        const { id } = reqUser;
         const product = await prisma.product.update({
             where: {
-                id,
+                id: productID,
             },
             data: {
                 name: req.body.name,
-                belongsToId: req.body.userID,
+                belongsToId: id,
             },
         });
 
         res.status(201);
         res.json({ product });
+    } catch (e) {
+        res.status(404);
+        res.json({ error: e });
+    }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+    try {
+        await prisma.product.delete({
+            where: {
+                id: req.params.id,
+            },
+        });
+        res.status(200);
+        res.json({ message: "Operation delete is successful." });
     } catch (e) {
         res.status(404);
         res.json({ error: e });
