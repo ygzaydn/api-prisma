@@ -25,6 +25,7 @@ https://www.framer.com/templates/chronos/
     - [JWT](#jwt)
     - [Hashing Passwords](#hashing-passwords)
   - [Validators](#validators)
+  - [Adding Indexes](#adding-indexes)
 
 
 
@@ -823,3 +824,22 @@ app.post("/", body("name").exists(), (req, res) => {
 ```
 
 The validator above will check if incoming request has property named `name` inside its body.
+
+## Adding Indexes
+
+You can add index to your db by using `@@` notation. For example on product model we can add:
+
+```
+@@unique([id,belongsToId])
+```
+
+Later, we need to migrate the change by typing `npx prisma migrate`. To use the generated index:
+
+```js
+where:{
+  id_belongsToId: {
+    id: req.params.id, 
+    belongsToId:id
+  }
+}
+```

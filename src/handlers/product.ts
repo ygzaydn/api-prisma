@@ -59,7 +59,7 @@ export const postProduct = async (req: IRequest, res: Response) => {
         });
         if (product) {
             res.status(200);
-            return res.json({ product });
+            return res.json({ data: product });
         }
     } catch (e) {
         res.status(400);
@@ -71,6 +71,7 @@ export const updateProduct = async (req: IRequest, res: Response) => {
     try {
         const productID = req.params.id;
         const reqUser = req.user as JwtPayload;
+
         const { id } = reqUser;
         const product = await prisma.product.update({
             where: {
@@ -83,18 +84,25 @@ export const updateProduct = async (req: IRequest, res: Response) => {
         });
 
         res.status(201);
-        res.json({ product });
+        res.json({ data: product });
     } catch (e) {
         res.status(404);
         res.json({ error: e });
     }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: IRequest, res: Response) => {
     try {
+        const productID = req.params.id;
+        const reqUser = req.user as JwtPayload;
+        const { id } = reqUser;
+
         await prisma.product.delete({
             where: {
-                id: req.params.id,
+                id_belongsToId: {
+                    id: productID,
+                    belongsToId: id,
+                },
             },
         });
         res.status(200);
