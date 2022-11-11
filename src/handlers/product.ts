@@ -2,12 +2,15 @@ import prisma from "../db";
 
 import { Request, Response } from "express";
 
-import { IRequest } from "../types/types";
+import { IRequest, JwtPayload } from "../types/types";
 
 export const getProducts = async (req: IRequest, res: Response) => {
     try {
+        const blabla = req.user as JwtPayload;
+        const { id } = blabla;
+
         const products = await prisma.product.findMany({
-            where: {},
+            where: { id },
         });
         res.status(200);
         return res.json({ products });

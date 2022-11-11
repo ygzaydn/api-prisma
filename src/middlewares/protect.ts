@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-import { IRequest } from "../types/types";
+import { IRequest, JwtPayload } from "../types/types";
 
 export const protect = (req: IRequest, res: Response, next: NextFunction) => {
     const bearer = req.header("authorization");
@@ -20,9 +20,11 @@ export const protect = (req: IRequest, res: Response, next: NextFunction) => {
     }
 
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET!);
+        const payload = jwt.verify(
+            token,
+            process.env.JWT_SECRET!
+        ) as JwtPayload;
         req.user = payload;
-        console.log(payload);
         next();
         return;
     } catch (e) {

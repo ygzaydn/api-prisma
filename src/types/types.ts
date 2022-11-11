@@ -1,5 +1,10 @@
 import { Request } from "express";
-import { JwtPayload } from "jsonwebtoken";
+
+export interface JwtPayload {
+    id: string;
+    iat: number;
+    username: string;
+}
 
 export interface IRequest extends Request {
     user?: JwtPayload | string;
