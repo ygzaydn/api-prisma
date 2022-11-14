@@ -1,6 +1,6 @@
 import prisma from "../db";
 
-import { Request, Response } from "express";
+import { Response } from "express";
 import { IRequest, JwtPayload } from "../types/types";
 
 export const getProducts = async (req: IRequest, res: Response) => {
@@ -27,21 +27,19 @@ export const getProduct = async (req: IRequest, res: Response) => {
 
         const productID = req.params.id;
 
-        const product = await prisma.product.findFirst({
+        const product = await prisma.product.findUnique({
             where: {
-                id: productID,
-                belongsToId: id,
+                id_belongsToId: {
+                    id: productID,
+                    belongsToId: id,
+                },
             },
         });
 
-        if (product) {
-            res.status(200);
-            return res.json({ data: product });
-        }
-        res.status(404);
-        return res.json({ error: `Product id:${id} not found` });
+        res.status(200);
+        return res.json({ data: product });
     } catch (e) {
-        res.status(400);
+        res.status(404);
         res.json({ error: e });
     }
 };
@@ -108,7 +106,7 @@ export const deleteProduct = async (req: IRequest, res: Response) => {
             },
         });
         res.status(200);
-        res.json({ message: "Operation delete is successful." });
+        res.json({ message: "Record deleted." });
     } catch (e) {
         res.status(404);
         res.json({ error: e });
