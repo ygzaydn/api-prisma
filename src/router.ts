@@ -48,7 +48,13 @@ router.delete(
 
 router.get("/update", (req, res) => {});
 router.get("/update/:id", (req, res) => {});
-router.post("/update", (req, res) => {});
+router.post(
+    "/update",
+    body("title").exists().isString(),
+    body("body").exists().isString(),
+    body("productId").exists().isString(),
+    (req, res) => {}
+);
 router.put(
     "/update/:id",
     body("title").optional(),
