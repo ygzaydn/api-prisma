@@ -85,7 +85,7 @@ When building something trivial like our example, then not using a framework is 
 
 ### Server
 
-An API is a code that runs on server. A server is an app that has no visual representation and is always running. Usually connected to a network and shared among many clients (UIs, web apps, mobile apps etc.).. Servers usually sit in front of a DB and facilitate access to that DB. 
+An API is a code that runs on server. A server is an app that has no visual representation and is always running. Usually connected to a network and shared among many clients (UIs, web apps, mobile apps etc.). Servers usually sit in front of a DB and facilitate access to that DB. 
 
 There are small exceptions here, and that would be serverless APIs. Big difference with serverless APIs is they are not always on like a traditional server. Servers must operate on a port, a virtual place on a computers OS where network connections start and end. Ports help comuters sort out their network traffic.
 
@@ -152,7 +152,7 @@ app.listen(3001, () => {
 When it comes to choosing a DB for your API, there are many variables at play.
 
 
-However, no matter the DB, how you interact with the DB matters. What good is the perfect DB that is painfull to interact with. Enter, and ORM. Object-Relational Mapper (ORM) is a term used to describe a technique that allows you to interact with a DB using an object-oriented approach. When most people say ORM, they're actually talking about an ORM library, which is really just and SDK for your DB. For example, without and ORM, you can only interact with a SQL DB using SQL.
+However, no matter the DB, how you interact with the DB matters. Object-Relational Mapper (ORM) is a term used to describe a technique that allows you to interact with a DB using an object-oriented approach. When most people say ORM, they're actually talking about an ORM library, which is really just and SDK for your DB. For example, without and ORM, you can only interact with a SQL DB using SQL.
 
 ```SQL
 INSERT INTO Customers (
