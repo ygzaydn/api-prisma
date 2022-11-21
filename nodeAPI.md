@@ -27,6 +27,8 @@ https://www.framer.com/templates/chronos/
   - [Validators](#validators)
   - [Adding Indexes](#adding-indexes)
   - [Error Handing](#error-handing)
+  - [Global Configuration Management](#global-configuration-management)
+    - [NODE_ENV](#node_env)
 
 
 
@@ -874,7 +876,8 @@ const handler = async (req, res, next) => {
   try {
     const user = await prisma.user.create({})
   } catch (err) {
-    next(err)
+    err.type = 'auth'; // note that we're adding a new type to our Error type, so we need to add a custom error type to not have an error on TS.
+    next(err) // this will send error to next handler.
   }
 }
 ```
@@ -890,7 +893,60 @@ app.use({err, req, res, next} => {
 });
 ```
 
+By doing that, we can classify the errors that we get to have better log on client side. This gives us flexibility of controlling errors.
 
+## Global Configuration Management
 
+As your API gets bigger, it's harder to keep track of things like secrets, options, env vars etc. We need want to be able to give our app the flexibility to adapt to each environment (local, staging, prod...) without having to change too much. It would be awesome, if everything we needed to change was in one place that we could import everywhere.
+
+### NODE_ENV
+
+Environment variables are vales provided from the environment at run time. They're perfect for injecting secret values that our server needs, but are too dangerous to store in git.
+
+One very important env var is `NODE_ENV`. This env var is usually tasked with determining the "mode" your app is running. Some examples are:
+
+  - development (default)
+  - production
+  - testing
+
+We can check the `NODE_ENV` to see what env we are in and conditionally track based on the environment.
+
+Let's create a new file `src/config/index.ts`. Then, for every environment, we'll create a file. Those environments are local, staging and production.
+
+We can create different files for `local`, `staging` and `prod` modes of our app. Each of one these files will be used to configure variables for their matching environment.
+
+Next, we'll merge the configs together, giving us our final config that we can use anywhere. In `src/config/index.ts`:
+
+```js
+import merge from 'lodash.merge'
+
+// make sure NODE_ENV is set
+process.env.NODE_ENV = process.env.NODE_ENV || "development";
+
+const stage = process.env.STAGE || "local";
+let envConfig;
+
+// dynamically require each config depending on the stage we're in
+if (stage === "production") {
+  envConfig = require("./prod").default;
+} else if (stage === "staging") {
+  envConfig = require("./staging").default;
+} else {
+  envConfig = require("./local").default;
+}
+
+const defaultConfig = {
+  stage,
+  dbUrl: process.env.DATABASE_URL,
+  jwtSecret: process.env.JWT_SECRET,
+  port: process.env.PORT,
+  logging: false,
+}
+
+/*
+The _.merge() method is used to merge two or more objects starting with the left-most to the right-most to create a parent mapping object. When two keys are the same, the generated object will have value for the rightmost key. If more than one object is the same, the newly generated object will have only one key and value corresponding to those objects.
+*/
+export default merge(defaultConfig, envConfig)
 
 ```
+

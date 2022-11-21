@@ -1,7 +1,7 @@
 import prisma from "../db";
 
-import { Response } from "express";
-import { IRequest, JwtPayload } from "../types/types";
+import { NextFunction, Response } from "express";
+import { IRequest, JwtPayload, IError } from "../types/types";
 
 export const getProducts = async (req: IRequest, res: Response) => {
     try {
@@ -44,7 +44,11 @@ export const getProduct = async (req: IRequest, res: Response) => {
     }
 };
 
-export const postProduct = async (req: IRequest, res: Response) => {
+export const postProduct = async (
+    req: IRequest,
+    res: Response,
+    next: NextFunction
+) => {
     try {
         const reqUser = req.user as JwtPayload;
         const { id } = reqUser;
@@ -59,9 +63,9 @@ export const postProduct = async (req: IRequest, res: Response) => {
             res.status(200);
             return res.json({ data: product });
         }
-    } catch (e) {
-        res.status(400);
-        res.json({ error: e });
+    } catch (e: IError | any) {
+        e.type = "input";
+        next(e);
     }
 };
 

@@ -22,9 +22,9 @@ export const createNewUser = async (
 
         const token = createJWT(user);
         res.json({ token });
-    } catch (err: IError | undefined | any) {
-        err.type = "input";
-        next(err);
+    } catch (e: IError | any) {
+        e.type = "input";
+        next(e);
     }
 };
 
