@@ -26,6 +26,7 @@ https://www.framer.com/templates/chronos/
     - [Hashing Passwords](#hashing-passwords)
   - [Validators](#validators)
   - [Adding Indexes](#adding-indexes)
+  - [Error Handing](#error-handing)
 
 
 
@@ -844,3 +845,51 @@ where:{
 }
 ```
 
+## Error Handing
+
+If an error is not caught on our server, it'll crash and our API will non functional. To avoid this, we want to make sure we catch any and all potential errors. We also want to do right by the requester and inform them on any errors, especially if it's their fault.
+
+If you run the following code, you'll see an error in your terminal, yet the server will not crash.
+
+```js
+app.get("/", () => {
+  throw new Error("opps");
+});
+```
+
+Express has its own error handling middleware. Error handling middleware is just like all middleware except they don't run before a handler, they only run after an error has been thrown.
+
+```js
+app.use((err, req, res, next) => {
+  // handle error
+});
+```
+
+A good practice is to use `async/await` structure to deal with async errors.
+
+```js
+const handler = async (req, res, next) => {
+  // ...
+  try {
+    const user = await prisma.user.create({})
+  } catch (err) {
+    next(err)
+  }
+}
+```
+
+We can overwrite the default handler with our own custom one.
+
+```js
+app.use({err, req, res, next} => {
+  if (err.type === 'auth') {
+    res.status(401);
+    res.json({message: "none"})
+  }
+});
+```
+
+
+
+
+```

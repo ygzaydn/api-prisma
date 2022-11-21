@@ -57,6 +57,7 @@ export const postUpdate = async (req: IRequest, res: Response) => {
         });
 
         if (!product) {
+            res.status(404);
             res.json({ error: "Product not found" });
         }
 
