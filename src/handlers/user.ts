@@ -1,20 +1,31 @@
 import prisma from "../db";
 import { comparePasswords, createJWT, hashPassword } from "../modules/auth";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
-export const createNewUser = async (req: Request, res: Response) => {
-    const hash = await hashPassword(req.body.password);
+import { IError } from "../types/types";
 
-    // Prisma client is aware all of the models that we've created. So we can use .user method.
-    const user = await prisma.user.create({
-        data: {
-            username: req.body.username,
-            password: hash,
-        },
-    });
+export const createNewUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const hash = await hashPassword(req.body.password);
 
-    const token = createJWT(user);
-    res.json({ token });
+        // Prisma client is aware all of the models that we've created. So we can use .user method.
+        const user = await prisma.user.create({
+            data: {
+                username: req.body.username,
+                password: hash,
+            },
+        });
+
+        const token = createJWT(user);
+        res.json({ token });
+    } catch (err: IError | undefined | any) {
+        err.type = "input";
+        next(err);
+    }
 };
 
 export const signIn = async (req: Request, res: Response) => {

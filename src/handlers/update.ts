@@ -62,9 +62,7 @@ export const postUpdate = async (req: IRequest, res: Response) => {
         }
 
         const update = await prisma.update.create({
-            data: {
-                ...req.body,
-            },
+            data: req.body,
         });
 
         res.status(201);

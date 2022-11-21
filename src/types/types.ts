@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Errback, Request } from "express";
 
 export interface JwtPayload {
     id: string;
@@ -8,4 +8,8 @@ export interface JwtPayload {
 
 export interface IRequest extends Request {
     user?: JwtPayload | string;
+}
+
+export interface IError extends Errback {
+    type: "auth" | "input";
 }
