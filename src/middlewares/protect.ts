@@ -1,5 +1,6 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import config from "../config";
 
 import { IRequest, JwtPayload } from "../types/types";
 
@@ -20,10 +21,7 @@ export const protect = (req: IRequest, res: Response, next: NextFunction) => {
     }
 
     try {
-        const payload = jwt.verify(
-            token,
-            process.env.JWT_SECRET!
-        ) as JwtPayload;
+        const payload = jwt.verify(token, config.jwtSecret!) as JwtPayload;
         req.user = payload;
         next();
         return;

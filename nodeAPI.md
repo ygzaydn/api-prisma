@@ -29,6 +29,11 @@ https://www.framer.com/templates/chronos/
   - [Error Handing](#error-handing)
   - [Global Configuration Management](#global-configuration-management)
     - [NODE\_ENV](#node_env)
+  - [Performance Issues](#performance-issues)
+    - [Blocking Code](#blocking-code)
+  - [Testing](#testing)
+    - [Unit Test](#unit-test)
+    - [Integration Test](#integration-test)
 
 
 
@@ -930,7 +935,7 @@ let envConfig;
 if (stage === "production") {
   envConfig = require("./prod").default;
 } else if (stage === "staging") {
-  envConfig = require("./testing").default;
+  envConfig = require("./staging").default;
 } else {
   envConfig = require("./local").default;
 }
@@ -950,3 +955,101 @@ export default merge(defaultConfig, envConfig)
 
 ```
 
+You can import config file wherever you need to use. 
+
+## Performance Issues
+
+Node.js is a single threaded by default. A side effect of this is that our code could potentially be blocking the main execution thread. Our API could fail to take incoming requests because it's blocked by CPU. To avoid this, make sure that any intense workload is asyncronous (on event loop).
+
+### Blocking Code
+
+Here's an example of some code that could block your server.
+
+```js
+import fs from 'fs'
+
+const result = fs.readFileSync("some/path/to/file.txt")
+```
+
+Reading a file with the sync version of the method is blocking. If that file was huge and running on a popular route where many requests triggered its execution, your API will eventually slow down. To avoid this, you'd want to make sure this code was async.
+
+```js
+// promise version
+import fs from "fs/promises";
+
+const result = await fs.readFile("some/path/to/file.txt");
+```
+
+Now, this code will no longer tie up the main thread, allowing more requests to come through. If you ABSOLUTELY could not convert some sync code to async code, then you should use a child process to run the code on a different thread.
+
+## Testing
+
+We use `jest` and `supertest`. Supertest helps us to write integration tests. To install:
+
+```
+npm i supertest @types/supertest jest @types/jest ts-jest
+```
+
+Next, we'll initialize a jest config:
+
+`npx ts-jest config:init.`
+
+We're now ready to test!
+
+
+### Unit Test
+
+A unit test is all about testing individual pieces of logic independently of each other. You have to make sure you write your code in a way that can be unit tested.
+
+```js
+
+// not testable
+const value = 100;
+const action = () => {
+  console.log(value);
+};
+``;
+
+// testable
+export const action = (value) => {
+  console.log(value);
+};
+
+```
+
+Using arguments vs creating closures and exporting your code are all great patterns to use when creating testable code. A test looks like:
+
+```js
+describe("user handler", async() => {
+  expect("something").toBe("something")
+})
+```
+
+This is how you might write a unit test in Jest. Each `it` block is an actual test where you usually call some function you want to test, and then create some assertion about what its return value should be. The `describe` function is just for organizing your test.
+
+### Integration Test
+
+Integration tests will test how an entire route works by actually making a request to observe what the API sent back and making assertions on that result. We can use jest along with supertest to run integration test.
+
+```js
+import app from '../server'
+import request from "supertest"
+
+describe("POST /user", () => {
+  if("responds with json", async () => {
+    const res = await request(app)
+      .post("/user")
+      .send({username:"hello",password:"hola"})
+      .set("Accept","application/json")
+
+    expect(res.headers["Content-Type"]).toMatch(/json/);
+    expect(res.status).toEqual(200);
+  })
+})
+
+```
+
+In this test, we're using the `request` from supertest to make a request to `POST /user`, which in our app creates a user. We're sending up the required payload and expect to get a successful 200 when its done. 
+
+> To run the test, change your package json for script "test" as follows:
+>     "test": "jest",
