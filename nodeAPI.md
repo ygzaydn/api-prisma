@@ -28,7 +28,7 @@ https://www.framer.com/templates/chronos/
   - [Adding Indexes](#adding-indexes)
   - [Error Handing](#error-handing)
   - [Global Configuration Management](#global-configuration-management)
-    - [NODE_ENV](#node_env)
+    - [NODE\_ENV](#node_env)
 
 
 
@@ -930,7 +930,7 @@ let envConfig;
 if (stage === "production") {
   envConfig = require("./prod").default;
 } else if (stage === "staging") {
-  envConfig = require("./staging").default;
+  envConfig = require("./testing").default;
 } else {
   envConfig = require("./local").default;
 }
