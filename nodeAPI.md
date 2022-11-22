@@ -34,6 +34,7 @@ https://www.framer.com/templates/chronos/
   - [Testing](#testing)
     - [Unit Test](#unit-test)
     - [Integration Test](#integration-test)
+  - [Deployment](#deployment)
 
 
 
@@ -1032,20 +1033,20 @@ This is how you might write a unit test in Jest. Each `it` block is an actual te
 Integration tests will test how an entire route works by actually making a request to observe what the API sent back and making assertions on that result. We can use jest along with supertest to run integration test.
 
 ```js
-import app from '../server'
-import request from "supertest"
+import app from "../server";
+import request from "supertest";
 
-describe("POST /user", () => {
-  if("responds with json", async () => {
+describe("POST /user", function () {
+  it("responds with json", async () => {
     const res = await request(app)
       .post("/user")
-      .send({username:"hello",password:"hola"})
-      .set("Accept","application/json")
+      .send({ username: "hello", password: "hola" })
+      .set("Accept", "application/json")
 
     expect(res.headers["Content-Type"]).toMatch(/json/);
     expect(res.status).toEqual(200);
-  })
-})
+  });
+});
 
 ```
 
@@ -1053,3 +1054,38 @@ In this test, we're using the `request` from supertest to make a request to `POS
 
 > To run the test, change your package json for script "test" as follows:
 >     "test": "jest",
+
+
+## Deployment
+
+We now need to deploy our API so we can use it! We just need to consider a few things. There really aren't too many things we need to change right now to make sure we can deploy. It also depends on where you're deploying.
+
+For us, the most imporant thing is making sure our repo is on Github and we create a build script to build our TypeScript. 
+
+In our package.json:
+
+```json
+"scripts": {
+  "build": "tsc -p tsconfig.json",
+  "start": "node dist/index.js",
+}
+```
+Render.com will use these scripts to build and start our server. Last thing is one final adjustment to our tsconfig.
+
+```json
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false,
+    "lib": ["esnext"],
+    "esModuleInterop": true,
+    "declaration": true
+  },
+  "include": ["src/**/*.ts"]
+}
+```
+
+We're ready to deploy! Last step is to deploy your server to Render.
+
